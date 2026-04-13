@@ -11,6 +11,14 @@ const routes: Routes = [
     redirectTo: 'home',
     pathMatch: 'full'
   },
+  {
+    path: 'pdf-maker',
+    loadChildren: () => import('./PDF-Maker/pdf-maker/pdf-maker.module').then( m => m.PdfMakerPageModule)
+  },
+  {
+    path: 'qr-scanner',
+    loadChildren: () => import('./qr-scanner/qr-scanner.module').then( m => m.QrScannerPageModule)
+  },
 ];
 
 @NgModule({

@@ -15,8 +15,13 @@ export class AppComponent {
 
   async initializeApp() {
     await this.platform.ready();
-    // Initialize AdMob when app starts
-    await AdMob.initialize();
-    console.log('AdMob ready');
+
+    // Initialize AdMob once when app starts
+    try {
+      await AdMob.initialize();
+      console.log('AdMob initialized successfully');
+    } catch (error) {
+      console.error('AdMob initialization failed:', error);
+    }
   }
 }

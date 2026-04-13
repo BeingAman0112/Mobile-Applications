@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
-import { AdMob } from '@capacitor-community/admob';
-import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
+import { Component, inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { AlertController } from '@ionic/angular';
+
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
@@ -9,32 +10,26 @@ import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
 })
 export class HomePage {
 
-  scannedData: string = 'No scan yet.';
-  scanCount: number = 0;
+  private router = inject(Router);
+  private alertController = inject(AlertController);
 
-  constructor() {}
+  // Navigate to QR Scanner page
+  openQRScanner() {
+    this.router.navigate(['/qr-scanner']);
+  }
 
-  async startScan() {
-    try {
-      await BarcodeScanner.checkPermission({ force: true });
-      const result = await BarcodeScanner.startScan();
+  // Navigate to PDF Maker page
+  openPDFMaker() {
+    this.router.navigate(['/pdf-maker']);
+  }
 
-      if (result.hasContent) {
-        this.scannedData = result.content;
-        this.scanCount++;
-
-        // Show ad every 3 scans
-        if (this.scanCount === 3) {
-          // Use test IDs first!
-          await AdMob.prepareInterstitial({
-            adId: 'ca-app-pub-3940256099942544/1033173712' // Test ad ID
-          });
-          await AdMob.showInterstitial();
-          this.scanCount = 0;
-        }
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
+  // Show coming soon alert for disabled features
+  async showComingSoon() {
+    const alert = await this.alertController.create({
+      header: 'Coming Soon!',
+      message: 'This feature is under development. Stay tuned!',
+      buttons: ['OK']
+    });
+    await alert.present();
   }
 }

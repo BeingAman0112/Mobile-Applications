@@ -1,19 +1,41 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>My QR Tool</ion-title>
+    <ion-title>Utility Toolbox</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ion-text>
-    <h2>QR Code Scanner</h2>
-  </ion-text>
+  <div class="tiles-container">
+    <!-- Tile 1: QR Scanner -->
+    <div class="tile" (click)="openQRScanner()">
+      <div class="tile-icon">📷</div>
+      <div class="tile-title">QR Scanner</div>
+      <div class="tile-description">Scan QR codes and barcodes</div>
+      <div class="tile-status active">● Active</div>
+    </div>
 
-  <ion-button expand="block" (click)="startScan()">
-    Start Scan
-  </ion-button>
+    <!-- Tile 2: PDF from Images -->
+    <div class="tile" (click)="openPDFMaker()">
+      <div class="tile-icon">📄</div>
+      <div class="tile-title">PDF from Images</div>
+      <div class="tile-description">Convert images to PDF document</div>
+      <div class="tile-status active">● Active</div>
+    </div>
 
-  <ion-text>
-    <p>Result: <strong>{{ scannedData }}</strong></p>
-  </ion-text>
+    <!-- Tile 3: PDF ↔ DOC Converter (Coming Soon) -->
+    <div class="tile disabled">
+      <div class="tile-icon">🔄</div>
+      <div class="tile-title">PDF ↔ DOC</div>
+      <div class="tile-description">Convert between PDF and Word</div>
+      <div class="tile-status coming-soon">● Coming Soon</div>
+    </div>
+
+    <!-- Tile 4: Image Resizer (Coming Soon) -->
+    <div class="tile disabled">
+      <div class="tile-icon">🖼️</div>
+      <div class="tile-title">Image Resizer</div>
+      <div class="tile-description">Resize, crop, adjust dimensions</div>
+      <div class="tile-status coming-soon">● Coming Soon</div>
+    </div>
+  </div>
 </ion-content>

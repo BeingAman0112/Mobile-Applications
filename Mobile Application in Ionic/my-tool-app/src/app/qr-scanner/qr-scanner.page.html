@@ -1,0 +1,28 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>QR Scanner</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="scanner-container" (click)="startScan()">
+    <ion-icon name="scan-outline" size="large"></ion-icon>
+    <p>Tap to start scanning</p>
+  </div>
+
+  <ion-card *ngIf="scannedData !== 'No scan yet.'">
+    <ion-card-header>
+      <ion-card-title>Scanned Result</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      {{ scannedData }}
+    </ion-card-content>
+  </ion-card>
+
+  <ion-text color="medium" class="scan-count">
+    <p>Scans this session: {{ scanCount }}</p>
+  </ion-text>
+</ion-content>

@@ -1,0 +1,56 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>Create PDF from Images</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="instructions">
+    <ion-text color="medium">
+      <h3>📸 Select Images</h3>
+      <p>Choose images from your gallery to create a PDF document</p>
+    </ion-text>
+  </div>
+
+  <!-- Selected Images Preview -->
+  <div class="image-preview-grid" *ngIf="selectedImages.length > 0">
+    <div class="image-item" *ngFor="let img of selectedImages; let i = index">
+      <img [src]="img.webPath" />
+      <ion-button
+        fill="clear"
+        color="danger"
+        size="small"
+        (click)="removeImage(i)"
+        class="remove-btn">
+        ✕
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="selectedImages.length === 0">
+    <ion-icon name="images-outline" size="large"></ion-icon>
+    <p>No images selected yet</p>
+    <p class="small-text">Tap the button below to select images</p>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+    <ion-button expand="block" (click)="selectImages()">
+      <ion-icon slot="start" name="images-outline"></ion-icon>
+      Select Images
+    </ion-button>
+
+    <ion-button
+      expand="block"
+      color="success"
+      [disabled]="selectedImages.length === 0 || isGenerating"
+      (click)="generatePDF()">
+      <ion-icon slot="start" name="document-outline"></ion-icon>
+      {{ isGenerating ? 'Creating PDF...' : 'Create PDF' }}
+    </ion-button>
+  </div>
+</ion-content>

@@ -1,0 +1,56 @@
+.instructions {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.image-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.image-item {
+  position: relative;
+  aspect-ratio: 1;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .remove-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    --padding-start: 0;
+    --padding-end: 0;
+    height: 28px;
+    width: 28px;
+    --border-radius: 50%;
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+
+  ion-icon {
+    font-size: 64px;
+    color: var(--ion-color-medium);
+  }
+
+  .small-text {
+    font-size: 12px;
+    color: var(--ion-color-medium);
+  }
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
