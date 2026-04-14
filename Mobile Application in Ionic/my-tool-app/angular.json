@@ -13,6 +13,10 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
+            "allowedCommonJsDependencies": [
+              "pdfmake",
+              "@awesome-cordova-library/image-resizer"
+            ],
             "outputPath": "www",
             "index": "src/index.html",
             "main": "src/main.ts",

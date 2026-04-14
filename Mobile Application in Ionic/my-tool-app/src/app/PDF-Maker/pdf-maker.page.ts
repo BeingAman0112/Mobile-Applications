@@ -1,9 +1,13 @@
 import { Component } from '@angular/core';
-import { Camera, CameraResultType, CameraSource, Photo } from '@capacitor/camera';
-import { Filesystem, Directory } from '@capacitor/filesystem';
-import { Platform, IonicModule } from '@ionic/angular';
+import { Camera, GalleryPhoto } from '@capacitor/camera';
+import type { Content, TDocumentDefinitions, TVirtualFileSystem } from 'pdfmake/interfaces';
 
-declare let pdfMake: any;
+type PdfMakeModule = typeof import('pdfmake/build/pdfmake');
+
+interface SelectedImage {
+  webPath: string;
+  base64: string;
+}
 
 @Component({
   selector: 'app-pdf-maker',
@@ -12,19 +16,30 @@ declare let pdfMake: any;
   standalone: false,
 })
 export class PdfMakerPage {
-  selectedImages: any[] = [];
+  selectedImages: SelectedImage[] = [];
   isGenerating = false;
+  private pdfMake: PdfMakeModule | null = null;
 
-  constructor(private platform: Platform) {
-    this.loadPdfMake();
+  constructor() {
+    void this.loadPdfMake();
   }
 
-  async loadPdfMake() {
-    // Dynamically import pdfmake
-    const pdfMakeModule = await import('pdfmake/build/pdfmake');
-    const pdfFontsModule = await import('pdfmake/build/vfs_fonts');
-    pdfMake = pdfMakeModule.default;
-    pdfMake.vfs = pdfFontsModule.default['pdfMake'].vfs;
+  async loadPdfMake(): Promise<void> {
+    if (this.pdfMake) {
+      return;
+    }
+
+    const [pdfMakeModule, pdfFontsModule] = await Promise.all([
+      import('pdfmake/build/pdfmake'),
+      import('pdfmake/build/vfs_fonts'),
+    ]);
+
+    const vfs = (
+      'default' in pdfFontsModule ? pdfFontsModule['default'] : pdfFontsModule
+    ) as unknown as TVirtualFileSystem;
+
+    pdfMakeModule.addVirtualFileSystem(vfs);
+    this.pdfMake = pdfMakeModule;
   }
 
   async selectImages() {
@@ -38,9 +53,13 @@ export class PdfMakerPage {
         // Convert to base64 for PDF generation
         const base64Data = await this.readAsBase64(photo);
 
+        if (!photo.webPath) {
+          continue;
+        }
+
         this.selectedImages.push({
           webPath: photo.webPath,
-          base64: base64Data
+          base64: base64Data,
         });
       }
     } catch (error) {
@@ -48,10 +67,14 @@ export class PdfMakerPage {
     }
   }
 
-  private async readAsBase64(photo: Photo) {
-    const response = await fetch(photo.webPath!);
+  private async readAsBase64(photo: GalleryPhoto): Promise<string> {
+    if (!photo.webPath) {
+      throw new Error('Selected image is missing a webPath.');
+    }
+
+    const response = await fetch(photo.webPath);
     const blob = await response.blob();
-    return await this.convertBlobToBase64(blob) as string;
+    return this.convertBlobToBase64(blob);
   }
 
   private convertBlobToBase64(blob: Blob): Promise<string> {
@@ -75,16 +98,23 @@ export class PdfMakerPage {
     this.isGenerating = true;
 
     try {
-      // Prepare document definition for pdfmake
-      const docDefinition: any = {
+      await this.loadPdfMake();
+
+      if (!this.pdfMake) {
+        throw new Error('PDF generator failed to initialize.');
+      }
+
+      const content: Content[] = [];
+
+      const docDefinition: TDocumentDefinitions = {
         pageSize: 'A4',
         pageMargins: [20, 20, 20, 20],
-        content: []
+        content
       };
 
       // Add each image to the PDF
       for (const image of this.selectedImages) {
-        docDefinition.content.push({
+        content.push({
           image: image.base64,
           width: 500,
           alignment: 'center',
@@ -93,8 +123,7 @@ export class PdfMakerPage {
       }
 
       // Generate PDF
-      const pdfDocGenerator = pdfMake.createPdf(docDefinition);
-
+      const pdfDocGenerator = this.pdfMake.createPdf(docDefinition);
       // Download the PDF
       pdfDocGenerator.download(`document-${Date.now()}.pdf`);
 

@@ -13,11 +13,15 @@ const routes: Routes = [
   },
   {
     path: 'pdf-maker',
-    loadChildren: () => import('./PDF-Maker/pdf-maker/pdf-maker.module').then( m => m.PdfMakerPageModule)
+    loadChildren: () => import('./PDF-Maker/pdf-maker.module').then( m => m.PdfMakerPageModule)
   },
   {
     path: 'qr-scanner',
     loadChildren: () => import('./qr-scanner/qr-scanner.module').then( m => m.QrScannerPageModule)
+  },
+  {
+    path: 'image-resizer',
+    loadChildren: () => import('./image-resizer/image-resizer.module').then( m => m.ImageResizerPageModule)
   },
 ];
 

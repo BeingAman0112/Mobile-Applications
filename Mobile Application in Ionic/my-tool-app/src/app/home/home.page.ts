@@ -22,6 +22,10 @@ export class HomePage {
   openPDFMaker() {
     this.router.navigate(['/pdf-maker']);
   }
+  // Add this method
+openImageResizer() {
+  this.router.navigate(['/image-resizer']);
+}
 
   // Show coming soon alert for disabled features
   async showComingSoon() {

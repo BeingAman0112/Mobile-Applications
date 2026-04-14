@@ -1,0 +1,144 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>Image Resizer</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Image Selection Section -->
+  <div class="selection-section">
+    <ion-button expand="block" (click)="selectImage()" [disabled]="isProcessing">
+      <ion-icon slot="start" name="images-outline"></ion-icon>
+      Select Image
+    </ion-button>
+
+    <ion-text color="medium" class="info-text" *ngIf="!selectedImage">
+      <p>Choose an image from your gallery to resize</p>
+    </ion-text>
+  </div>
+
+  <!-- Image Preview Section -->
+  <div class="preview-section" *ngIf="selectedImage">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Original Image</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <img [src]="selectedImage.webPath" class="preview-image" />
+        <div class="image-info">
+          <p>Dimensions: {{ originalWidth }} × {{ originalHeight }} px</p>
+          <p>Size: {{ originalSizeKB }} KB</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Resize Controls -->
+  <div class="resize-controls" *ngIf="selectedImage">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Resize Settings</ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Resize Method Selection -->
+        <ion-segment [(ngModel)]="resizeMethod" (ionChange)="onMethodChange()">
+          <ion-segment-button value="pixels">
+            <ion-label>Custom Pixels</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="percentage">
+            <ion-label>Percentage</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+
+        <!-- Custom Pixels Input -->
+        <div *ngIf="resizeMethod === 'pixels'" class="input-group">
+          <ion-item>
+            <ion-label position="stacked">Width (pixels)</ion-label>
+            <ion-input type="number" [(ngModel)]="targetWidth"
+                       (ionChange)="onWidthChange()"
+                       placeholder="Enter width"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Height (pixels)</ion-label>
+            <ion-input type="number" [(ngModel)]="targetHeight"
+                       (ionChange)="onHeightChange()"
+                       placeholder="Enter height"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label>Keep Aspect Ratio</ion-label>
+            <ion-toggle [(ngModel)]="keepAspectRatio"
+                        (ionChange)="onAspectToggle()"></ion-toggle>
+          </ion-item>
+        </div>
+
+        <!-- Percentage Input -->
+        <div *ngIf="resizeMethod === 'percentage'" class="input-group">
+          <ion-item>
+            <ion-label>Scale Percentage</ion-label>
+            <ion-range min="10" max="200" step="5"
+                       [(ngModel)]="scalePercentage"
+                       (ionChange)="onPercentageChange()">
+              <ion-label slot="start">10%</ion-label>
+              <ion-label slot="end">200%</ion-label>
+            </ion-range>
+          </ion-item>
+
+          <ion-text color="primary">
+            <p class="preview-text">Preview: {{ previewWidth }} × {{ previewHeight }} px</p>
+          </ion-text>
+        </div>
+
+        <!-- Quality Setting -->
+        <ion-item>
+          <ion-label>Quality: {{ quality }}%</ion-label>
+          <ion-range min="10" max="100" step="5"
+                     [(ngModel)]="quality"
+                     color="primary">
+            <ion-icon slot="start" name="image-outline"></ion-icon>
+            <ion-icon slot="end" name="image"></ion-icon>
+          </ion-range>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <ion-button expand="block" color="primary"
+                  (click)="resizeImage()"
+                  [disabled]="isProcessing">
+        <ion-icon slot="start" name="resize-outline"></ion-icon>
+        {{ isProcessing ? 'Processing...' : 'Resize Image' }}
+      </ion-button>
+
+      <ion-button expand="block" color="success"
+                  (click)="downloadResizedImage()"
+                  [disabled]="!resizedImage">
+        <ion-icon slot="start" name="download-outline"></ion-icon>
+        Download Resized Image
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Resized Result Preview -->
+  <div class="result-section" *ngIf="resizedImage">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Resized Result</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <img [src]="resizedImage.webPath" class="preview-image" />
+        <div class="image-info">
+          <p>Dimensions: {{ resizedWidth }} × {{ resizedHeight }} px</p>
+          <p>Size: {{ resizedSizeKB }} KB</p>
+          <p>Quality: {{ quality }}%</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
