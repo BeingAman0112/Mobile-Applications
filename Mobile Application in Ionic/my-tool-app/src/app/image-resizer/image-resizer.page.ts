@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Camera, CameraResultType, CameraSource, Photo } from '@capacitor/camera';
 import { Filesystem, Directory } from '@capacitor/filesystem';
+import { AdMob, BannerAdOptions, BannerAdPosition, BannerAdSize } from '@capacitor-community/admob';
 
 @Component({
   selector: 'app-image-resizer',
@@ -8,7 +9,7 @@ import { Filesystem, Directory } from '@capacitor/filesystem';
   styleUrls: ['./image-resizer.page.scss'],
   standalone: false
 })
-export class ImageResizerPage {
+export class ImageResizerPage implements OnInit, OnDestroy {
   selectedImage: any = null;
   resizedImage: any = null;
   isProcessing = false;
@@ -37,12 +38,67 @@ export class ImageResizerPage {
   private originalImageBase64: string | null = null;
   private originalImageBlob: Blob | null = null;
 
+  // Ad banner properties
+  private appId = 'ca-app-pub-9207186764337643~3874805630';
+  private bannerId = 'ca-app-pub-9207186764337643/8436867175';
+  private isBannerLoaded = false;
+
   constructor() {}
+
+  async ngOnInit() {
+    await this.initializeAdMob();
+  }
+
+  async ngOnDestroy() {
+    await this.hideBanner();
+  }
+
+  async initializeAdMob() {
+    try {
+      // Initialize AdMob
+      await AdMob.initialize({
+        testingDevices: ['YOUR_DEVICE_ID'], // Add your device ID for testing
+      });
+
+      // Show banner ad
+      await this.showBanner();
+    } catch (error) {
+      console.error('Error initializing AdMob:', error);
+    }
+  }
+
+  async showBanner() {
+    const options: BannerAdOptions = {
+      adId: this.bannerId,
+      adSize: BannerAdSize.BANNER,
+      position: BannerAdPosition.BOTTOM_CENTER,
+      margin: 0,
+      isTesting: false, // Set to false for production
+    };
+
+    try {
+      await AdMob.showBanner(options);
+      this.isBannerLoaded = true;
+    } catch (error) {
+      console.error('Error showing banner:', error);
+    }
+  }
+
+  async hideBanner() {
+    if (this.isBannerLoaded) {
+      try {
+        await AdMob.hideBanner();
+        this.isBannerLoaded = false;
+      } catch (error) {
+        console.error('Error hiding banner:', error);
+      }
+    }
+  }
 
   async selectImage() {
     try {
       console.log('Opening image picker...');
-      
+
       const image = await Camera.getPhoto({
         quality: 100,
         resultType: CameraResultType.Uri,
@@ -50,7 +106,7 @@ export class ImageResizerPage {
       });
 
       console.log('Image selected:', image);
-      
+
       if (!image || !image.path) {
         console.error('No valid image path returned');
         return;
@@ -63,29 +119,29 @@ export class ImageResizerPage {
       });
 
       console.log('File read successfully');
-      
+
       // Convert base64 to blob
       const base64String = typeof fileData.data === 'string' ? fileData.data : '';
       const base64Data = 'data:image/jpeg;base64,' + base64String;
       const blob = this.base64ToBlob(base64String, 'image/jpeg');
-      
+
       this.selectedImage = {
         webPath: base64Data,
         base64: fileData.data,
         blob: blob
       };
-      
+
       // Load image to get dimensions
       await this.loadAndGetImageInfo(base64Data);
-      
+
       // Reset resized image
       this.resizedImage = null;
-      
+
       // Set initial target dimensions
       this.targetWidth = this.originalWidth;
       this.targetHeight = this.originalHeight;
       this.updatePreview();
-      
+
     } catch (error) {
       console.error('Error selecting image:', error);
     }
@@ -107,13 +163,13 @@ export class ImageResizerPage {
       img.onload = () => {
         this.originalWidth = img.width;
         this.originalHeight = img.height;
-        
+
         // Calculate file size from base64
         if (this.selectedImage && this.selectedImage.base64) {
           const sizeInBytes = Math.round(this.selectedImage.base64.length * 0.75);
           this.originalSizeKB = Math.round(sizeInBytes / 1024);
         }
-        
+
         console.log(`Image loaded: ${this.originalWidth}x${this.originalHeight}`);
         resolve();
       };
@@ -160,7 +216,7 @@ export class ImageResizerPage {
     const percent = this.scalePercentage / 100;
     this.previewWidth = Math.round(this.originalWidth * percent);
     this.previewHeight = Math.round(this.originalHeight * percent);
-    
+
     if (this.resizeMethod === 'percentage') {
       this.targetWidth = this.previewWidth;
       this.targetHeight = this.previewHeight;
@@ -184,47 +240,47 @@ export class ImageResizerPage {
 
     try {
       console.log('Starting resize...');
-      
+
       // Create image element from base64
       const img = await this.loadImageFromBase64(this.selectedImage.webPath);
-      
+
       // Create canvas for resizing
       const canvas = document.createElement('canvas');
       canvas.width = this.targetWidth;
       canvas.height = this.targetHeight;
-      
+
       const ctx = canvas.getContext('2d');
       if (!ctx) {
         throw new Error('Could not get canvas context');
       }
-      
+
       // Draw and resize the image
       ctx.drawImage(img, 0, 0, this.targetWidth, this.targetHeight);
-      
+
       // Convert to blob with specified quality
       const blob = await new Promise<Blob>((resolve) => {
         canvas.toBlob(
-          (b) => resolve(b!), 
-          'image/jpeg', 
+          (b) => resolve(b!),
+          'image/jpeg',
           this.quality / 100
         );
       });
-      
+
       // Convert blob to base64 for display
       const base64 = await this.blobToBase64(blob);
-      
+
       this.resizedImage = {
         webPath: base64,
         base64: base64.split(',')[1],
         blob: blob
       };
-      
+
       this.resizedWidth = this.targetWidth;
       this.resizedHeight = this.targetHeight;
       this.resizedSizeKB = Math.round(blob.size / 1024);
-      
+
       console.log('Resize complete!');
-      
+
     } catch (error) {
       console.error('Error resizing image:', error);
     } finally {
@@ -260,10 +316,10 @@ export class ImageResizerPage {
 
     try {
       const fileName = `resized_${Date.now()}.jpg`;
-      
+
       // Convert blob to base64 for Filesystem plugin
       const base64Data = await this.blobToBase64(this.resizedImage.blob);
-      
+
       const savedFile = await Filesystem.writeFile({
         path: fileName,
         data: base64Data.split(',')[1],
@@ -272,7 +328,7 @@ export class ImageResizerPage {
       });
 
       console.log('Image saved to:', savedFile.uri);
-      
+
       // Show success message
       const alert = document.createElement('ion-alert');
       alert.header = 'Success!';
@@ -280,7 +336,7 @@ export class ImageResizerPage {
       alert.buttons = ['OK'];
       document.body.appendChild(alert);
       await alert.present();
-      
+
     } catch (error) {
       console.error('Error saving image:', error);
     }

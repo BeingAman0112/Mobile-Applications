@@ -28,7 +28,7 @@ export class QrScannerPage {
           // Show ad every 3 scans
           if (this.scanCount === 3) {
             await AdMob.prepareInterstitial({
-              adId: 'ca-app-pub-3940256099942544/1033173712' // Test ad ID
+              adId: 'ca-app-pub-9207186764337643/8436867175'
             });
             await AdMob.showInterstitial();
             this.scanCount = 0;
